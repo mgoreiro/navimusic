@@ -9,9 +9,46 @@ Cover Art Archive.
 
 - Autor: **mgoreiro** · Licencia: [MIT](LICENSE) · Versión: 1.0.0 ([changelog](CHANGELOG.md))
 
-## Instalación y uso
+## Instalación
 
-Requiere Python 3.9 o superior.
+Elige la que mejor te venga. En todas se abre `http://127.0.0.1:8765` en tu navegador: pulsa **Elegir carpeta…**,
+navega a tu música y escanea. El botón **? Ayuda** de la interfaz explica cada pestaña.
+
+### 1. Ejecutable (sin instalar Python) — recomendado
+
+Descarga el fichero de tu sistema desde la [última Release](https://github.com/mgoreiro/navimusic/releases/latest):
+
+| Sistema | Fichero |
+|---|---|
+| macOS Apple Silicon (M1/M2/M3/M4) | `navimusic-vX.Y.Z-macos-arm64.tar.gz` |
+| macOS Intel | `navimusic-vX.Y.Z-macos-x64.tar.gz` |
+| Windows 10/11 | `navimusic-vX.Y.Z-windows-x64.zip` |
+| Linux x86-64 | `navimusic-vX.Y.Z-linux-x64.tar.gz` |
+
+Descomprime y ejecuta `navimusic` (`navimusic.exe` en Windows). Se abrirá el navegador; para salir cierra la ventana
+de terminal o pulsa Ctrl+C. Los ejecutables no están firmados, así que el sistema avisará la primera vez:
+
+- **macOS:** si dice que no puede verificar al desarrollador, quita la marca de cuarentena y vuelve a ejecutar:
+  ```bash
+  xattr -d com.apple.quarantine navimusic && ./navimusic
+  ```
+- **Windows:** en el aviso de SmartScreen pulsa **Más información → Ejecutar de todos modos**.
+- **Linux:** `chmod +x navimusic && ./navimusic`.
+
+Cada Release incluye `SHA256SUMS.txt` para verificar la descarga.
+
+### 2. Con Python (pipx)
+
+Requiere Python 3.9 o superior y [pipx](https://pipx.pypa.io/):
+
+```bash
+pipx install git+https://github.com/mgoreiro/navimusic.git
+navimusic
+```
+
+Actualizar: `pipx upgrade navimusic`. Desinstalar: `pipx uninstall navimusic`.
+
+### 3. Desde el código fuente
 
 ```bash
 git clone https://github.com/mgoreiro/navimusic.git && cd navimusic
@@ -21,9 +58,7 @@ pip install -r requirements.txt
 python -m navimusic
 ```
 
-También puedes instalarlo con `pip install .`, que crea el comando `navimusic`.
-Se abre `http://127.0.0.1:8765` en tu navegador. Pulsa **Elegir carpeta…**, navega a tu música y escanea.
-El botón **? Ayuda** de la interfaz explica cada pestaña.
+### Opciones
 
 | Opción | Efecto |
 |---|---|
@@ -88,15 +123,24 @@ navimusic/
 API (todas con cabecera `X-Token`): `GET /api/fs|state|job|library|playlists|extras|covers`,
 `POST /api/scan|delete|covers/search|covers/save|organize/plan|organize/replan|organize/apply|cancel|settings`.
 
-## Binario único (opcional)
+## Generar los ejecutables
+
+Los construye la acción [`release.yml`](.github/workflows/release.yml) al subir una etiqueta `vX.Y.Z`:
+compila con PyInstaller en macOS (arm64 e Intel), Linux y Windows, comprueba que cada binario arranca y sirve la
+interfaz, y publica los paquetes y `SHA256SUMS.txt` en la Release. Para publicar una versión nueva:
+
+```bash
+# actualiza la versión en navimusic/__init__.py, pyproject.toml y CHANGELOG.md; haz commit y push
+git tag -a v1.1.0 -m "NaviMusic 1.1.0" && git push origin v1.1.0
+```
+
+Para construir uno a mano en tu máquina (PyInstaller no hace compilación cruzada):
 
 ```bash
 pip install pyinstaller
-pyinstaller --onefile --name NaviMusic --add-data "navimusic/static:navimusic/static" run.py
+pyinstaller --onefile --name navimusic --add-data "navimusic/static:navimusic/static" --collect-submodules send2trash run.py
 # Windows: --add-data "navimusic\static;navimusic\static"
 ```
-
-PyInstaller no hace compilación cruzada: ejecútalo en cada sistema operativo.
 
 ## Limitaciones
 

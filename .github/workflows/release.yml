@@ -1,0 +1,108 @@
+name: Release
+
+# Al subir una etiqueta vX.Y.Z se construyen los ejecutables y se publican en una Release.
+# También se puede lanzar a mano (Actions → Release → Run workflow) para probar el build sin publicar.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: macos-arm64,  os: macos-latest,      sep: ":", archive: tar.gz }
+          - { name: macos-x64,    os: macos-15-intel,    sep: ":", archive: tar.gz }
+          - { name: linux-x64,    os: ubuntu-22.04,      sep: ":", archive: tar.gz }
+          - { name: windows-x64,  os: windows-latest,    sep: ";", archive: zip }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Construir ejecutable
+        shell: bash
+        run: |
+          pyinstaller --onefile --name navimusic \
+            --add-data "navimusic/static${{ matrix.sep }}navimusic/static" \
+            --collect-submodules send2trash \
+            run.py
+
+      - name: Prueba de humo (arranca y sirve la interfaz)
+        shell: bash
+        run: |
+          BIN=dist/navimusic; [ -f dist/navimusic.exe ] && BIN=dist/navimusic.exe
+          NAVIMUSIC_PORT=8765 "$BIN" --no-browser &
+          PID=$!
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            curl -sf http://127.0.0.1:8765/ | grep -q "NaviMusic" && OK=1 && break
+            sleep 2
+          done
+          kill $PID || true
+          [ "${OK:-0}" = "1" ] || { echo "El ejecutable no responde"; exit 1; }
+
+      - name: Empaquetar
+        shell: bash
+        run: |
+          VER="${GITHUB_REF_NAME:-dev}"
+          NAME="navimusic-${VER}-${{ matrix.name }}"
+          mkdir -p out
+          if [ "${{ matrix.archive }}" = "zip" ]; then
+            cp dist/navimusic.exe out/navimusic.exe
+            cp LICENSE README.md out/
+            (cd out && 7z a -tzip "../${NAME}.zip" . > /dev/null)
+            echo "ASSET=${NAME}.zip" >> "$GITHUB_ENV"
+          else
+            cp dist/navimusic out/navimusic
+            cp LICENSE README.md out/
+            chmod +x out/navimusic
+            tar -czf "${NAME}.tar.gz" -C out .
+            echo "ASSET=${NAME}.tar.gz" >> "$GITHUB_ENV"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ env.ASSET }}
+          if-no-files-found: error
+
+  release:
+    name: Publicar Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Checksums y Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd assets && sha256sum * > SHA256SUMS.txt && cd ..
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" assets/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" assets/* \
+              --title "NaviMusic ${GITHUB_REF_NAME#v}" --generate-notes
+          fi
