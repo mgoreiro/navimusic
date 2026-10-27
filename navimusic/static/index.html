@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NaviMusic</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1c1f26;--mut:#6b7280;--line:#e3e6eb;--acc:#4f46e5;--acc-fg:#fff;--ok:#15803d;--warn:#b45309;--bad:#b91c1c;--chip:#eef0f4}
+@media (prefers-color-scheme:dark){:root{--bg:#14161b;--card:#1d2027;--fg:#e8eaf0;--mut:#98a0ae;--line:#2c313b;--acc:#818cf8;--acc-fg:#10121a;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--chip:#272b34}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0 8px 0 0}
+#rootlabel{color:var(--mut);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:45vw}
+nav{display:flex;gap:2px;padding:0 20px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;color:var(--mut);padding:11px 14px;cursor:pointer;font:inherit;border-bottom:2px solid transparent;white-space:nowrap}
+nav button.on{color:var(--acc);border-color:var(--acc);font-weight:600}
+nav button:disabled{opacity:.4;cursor:default}
+main{padding:20px;max-width:1200px;margin:0 auto}
+button.b{background:var(--chip);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 12px;cursor:pointer;font:inherit}
+button.b:hover{border-color:var(--acc)}
+button.p{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+button.d{background:var(--bad);color:#fff;border-color:var(--bad)}
+button:disabled{opacity:.45;cursor:default}
+input[type=text],select{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:7px;padding:6px 9px;font:inherit}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.sp{flex:1}
+.mut{color:var(--mut)}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
+.card>.h{padding:10px 14px;display:flex;gap:10px;align-items:center;cursor:default}
+.card>.b{padding:0 14px 12px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:12px}
+td.n,th.n{text-align:right;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.chip{display:inline-block;background:var(--chip);border-radius:20px;padding:1px 9px;font-size:12px;color:var(--mut)}
+details>summary{cursor:pointer;list-style:none;padding:10px 14px;display:flex;gap:10px;align-items:center}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸";color:var(--mut);width:10px}
+details[open]>summary::before{content:"▾"}
+.artist>summary{font-weight:600}
+.album{margin-left:18px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.cv{padding:10px;display:flex;flex-direction:column;gap:6px}
+.cv img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;background:var(--chip)}
+.old{color:var(--bad);text-decoration:line-through}.new{color:var(--ok)}
+#overlay{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:20}
+#overlay .box{background:var(--card);border-radius:12px;padding:18px;min-width:min(520px,92vw);max-height:80vh;display:flex;flex-direction:column;gap:10px}
+.prog{height:8px;border-radius:5px;background:var(--chip);overflow:hidden}.prog>i{display:block;height:100%;background:var(--acc);width:0;transition:width .2s}
+.list{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:45vh}
+.list div{padding:7px 12px;cursor:pointer;border-bottom:1px solid var(--line)}.list div:hover{background:var(--chip)}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;display:none;z-index:30;max-width:90vw}
+.empty{text-align:center;color:var(--mut);padding:50px 10px}
+.note{background:var(--chip);border-radius:8px;padding:8px 12px;margin-bottom:12px;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎵 NaviMusic</h1>
+  <button class="b p" id="pick">Elegir carpeta…</button>
+  <span id="rootlabel" class="mut">Ninguna carpeta seleccionada</span>
+  <span class="sp"></span>
+  <button class="b" id="rescan" disabled>↻ Reescanear</button>
+  <button class="b" id="settings">⚙ Ajustes</button>
+  <button class="b" id="help">? Ayuda</button>
+</header>
+<nav id="tabs">
+  <button data-t="library" disabled>A · Biblioteca</button>
+  <button data-t="playlists" disabled>B · Listas</button>
+  <button data-t="covers" disabled>C · Carátulas</button>
+  <button data-t="extras" disabled>D · Sobrantes</button>
+  <button data-t="organize" disabled>E · Tags y nombres</button>
+</nav>
+<main id="view"><div class="empty">Elige una carpeta con tu música para empezar.<br>¿Primera vez? Pulsa <b>? Ayuda</b>.</div></main>
+<footer class="mut" style="text-align:center;font-size:12px;padding:18px">NaviMusic v1.0.0 · © 2026 mgoreiro · Licencia MIT</footer>
+
+<div id="overlay"><div class="box" id="obox"></div></div>
+<div id="toast"></div>
+
+<script>
+const TOKEN="__TOKEN__";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtSize=b=>b>=1e9?(b/1e9).toFixed(2)+" GB":b>=1e6?(b/1e6).toFixed(1)+" MB":b>=1e3?Math.round(b/1e3)+" KB":b+" B";
+const fmtDur=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+":"+String(m).padStart(2,"0"):m)+":"+String(x).padStart(2,"0")};
+const S={tab:null,root:"",ready:false,settings:{}};
+
+async function api(path,body){
+  const opt=body===undefined?{headers:{"X-Token":TOKEN}}:{method:"POST",headers:{"X-Token":TOKEN,"Content-Type":"application/json"},body:JSON.stringify(body)};
+  if(location.protocol==="file:")throw new Error("Abriste el HTML como fichero. Ejecuta «python -m navimusic» y usa la dirección http://127.0.0.1:8765");
+  let r;try{r=await fetch(path,opt)}catch(e){throw new Error("Sin conexión con el servidor de NaviMusic. ¿Sigue ejecutándose «python -m navimusic»? Si lo reiniciaste, recarga esta página.")}
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||("HTTP "+r.status));return j;
+}
+function toast(msg,ms=3500){const t=$("#toast");t.textContent=msg;t.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display="none",ms)}
+function overlay(html){$("#obox").innerHTML=html;$("#overlay").style.display="flex"}
+function closeOverlay(){$("#overlay").style.display="none"}
+
+/* ---------- tareas en segundo plano ---------- */
+async function runJob(startPromise,title){
+  let job=await startPromise;
+  overlay(`<b>${esc(title)}</b><div class="prog"><i id="pb"></i></div><div class="mut" id="pm">Iniciando…</div><div><button class="b" id="pc">Cancelar</button></div>`);
+  $("#pc").onclick=()=>api("/api/cancel",{id:job.id});
+  while(true){
+    await new Promise(r=>setTimeout(r,500));
+    job=await api("/api/job?id="+job.id);
+    $("#pb").style.width=(job.total?100*job.done/job.total:5)+"%";
+    $("#pm").textContent=(job.total?`${job.done}/${job.total} · `:"")+(job.message||"");
+    if(job.status!=="running")break;
+  }
+  closeOverlay();
+  if(job.status==="error")throw new Error(job.error);
+  return job.result;
+}
+const guard=fn=>async(...a)=>{try{await fn(...a)}catch(e){closeOverlay();toast("⚠ "+e.message,6000)}};
+
+/* ---------- selector de carpeta ---------- */
+async function browse(path){
+  const d=await api("/api/fs?path="+encodeURIComponent(path||""));
+  overlay(`<b>Selecciona la carpeta de música</b>
+    <div style="display:flex;gap:6px"><input type="text" id="fp" style="flex:1" value="${esc(d.path)}"><button class="b" id="fgo">Ir</button></div>
+    <div>${d.roots.map((r,i)=>`<button class="b" data-r="${i}" style="margin:0 4px 4px 0">${esc(r.name)}</button>`).join("")}</div>
+    <div class="list">${d.parent?`<div data-p="${esc(d.parent)}">⬆ ..</div>`:""}${d.dirs.map(n=>`<div data-d="${esc(n)}">📁 ${esc(n)}</div>`).join("")||'<div class="mut">Sin subcarpetas</div>'}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end"><button class="b" id="fx">Cancelar</button><button class="b p" id="fok">Escanear esta carpeta</button></div>`);
+  const go=p=>browse(p).catch(e=>toast("⚠ "+e.message));
+  $("#fgo").onclick=()=>go($("#fp").value);$("#fx").onclick=closeOverlay;
+  $("#fp").onkeydown=e=>{if(e.key==="Enter")go(e.target.value)};
+  document.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>go(d.roots[b.dataset.r].path));
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>go(b.dataset.p));
+  document.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>go(d.path.replace(/[\\/]$/,"")+(d.path.includes("\\")?"\\":"/")+b.dataset.d));
+  $("#fok").onclick=guard(()=>scan(d.path));
+}
+async function scan(path){
+  const r=await runJob(api("/api/scan",{path}),"Escaneando biblioteca…");
+  if(!r||!r.root)return;
+  S.root=r.root;S.ready=true;updateHeader(r.stats);
+  toast(`${r.stats.tracks} pistas encontradas`);
+  show(S.tab||"library");
+}
+function updateHeader(stats){
+  $("#rootlabel").textContent=S.root+(stats?`  ·  ${stats.tracks} pistas · ${fmtSize(stats.size)} · ${fmtDur(stats.duration)}`:"");
+  $("#rootlabel").title=S.root;
+  document.querySelectorAll("#tabs button").forEach(b=>b.disabled=!S.ready);$("#rescan").disabled=!S.ready;
+}
+
+/* ---------- pestañas ---------- */
+async function show(tab){
+  S.tab=tab;document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===tab));
+  $("#view").innerHTML='<div class="empty">Cargando…</div>';
+  try{await VIEWS[tab]()}catch(e){$("#view").innerHTML=`<div class="empty bad">⚠ ${esc(e.message)}</div>`}
+}
+const VIEWS={library,playlists:()=>fileList("playlists","/api/playlists","Listas de reproducción","Navidrome gestiona sus propias playlists; los ficheros .m3u/.pls sueltos en la biblioteca suelen sobrar. Se envían a la papelera.",true),
+  extras:()=>fileList("extras","/api/extras","Ficheros innecesarios","Todo lo que no es audio, lista ni carátula estándar. Lo marcado como «sugerido» es basura conocida; revisa el resto antes de borrar.",false),covers,organize};
+
+/* A · biblioteca */
+async function library(){
+  const d=await api("/api/library");
+  const v=$("#view");
+  v.innerHTML=`<div class="bar"><input type="text" id="q" placeholder="Filtrar por artista, álbum o título…" style="min-width:280px"><span class="sp"></span><span class="mut">${d.tree.length} artistas · ${d.stats.tracks} pistas</span></div><div id="tree"></div>`;
+  const draw=q=>{
+    q=q.toLowerCase();let html="";
+    for(const a of d.tree){
+      const albums=a.albums.map(al=>{
+        const hit=!q||a.artist.toLowerCase().includes(q)||al.album.toLowerCase().includes(q);
+        const ts=hit?al.tracks:al.tracks.filter(t=>(t.title||"").toLowerCase().includes(q));
+        return ts.length?{...al,tracks:ts}:null}).filter(Boolean);
+      if(!albums.length)continue;
+      html+=`<details class="card artist" ${q?"open":""}><summary>${esc(a.artist)} <span class="chip">${albums.length} álbum${albums.length>1?"es":""} · ${a.count} pistas</span></summary>`+albums.map(al=>`
+        <details class="album"><summary>${esc(al.album)} ${al.year?`<span class="chip">${esc(al.year)}</span>`:""}<span class="mut">${esc(al.dir)}</span></summary>
+        <table><tr><th class="n">Disco</th><th class="n">Nº</th><th>Título</th><th>Artista</th><th>Fmt</th><th class="n">Dur.</th><th class="n">Tamaño</th></tr>${al.tracks.map(t=>`<tr><td class="n">${t.disc||""}</td><td class="n">${t.track||""}</td><td>${esc(t.title||"—")}</td><td class="mut">${esc(t.artist)}</td><td class="mut">${esc(t.ext.slice(1))}</td><td class="n mut">${fmtDur(t.duration)}</td><td class="n mut">${fmtSize(t.size)}</td></tr>`).join("")}</table></details>`).join("")+`</details>`;
+    }
+    $("#tree").innerHTML=html||'<div class="empty">Sin resultados</div>';
+  };
+  draw("");$("#q").oninput=e=>draw(e.target.value);
+}
+
+/* B y D · listas de ficheros con borrado */
+async function fileList(tab,url,title,help,allChecked){
+  const {items}=await api(url);
+  const v=$("#view");
+  if(!items.length){v.innerHTML=`<div class="empty">✅ No se ha encontrado nada en «${esc(title)}».</div>`;return}
+  const trash=S.settings.trash;
+  v.innerHTML=`<div class="note">${esc(help)}</div>
+   <div class="bar"><button class="b" id="s-all">Todo</button><button class="b" id="s-sug">Solo sugeridos</button><button class="b" id="s-none">Nada</button>
+   <span class="sp"></span><span id="sum" class="mut"></span><button class="b d" id="del">Borrar seleccionados</button></div>
+   <div class="card"><table><tr><th></th><th>Ruta</th><th>Motivo</th><th class="n">Tamaño</th></tr>${items.map((it,i)=>`<tr><td><input type="checkbox" data-i="${i}" ${it.suggested&&(allChecked||it.suggested)?"checked":""}></td><td>${it.kind==="dir"?"📁 ":""}${esc(it.path)}</td><td class="mut">${esc(it.reason)}${it.suggested?' <span class="chip">sugerido</span>':""}</td><td class="n mut">${it.kind==="dir"?"":fmtSize(it.size)}</td></tr>`).join("")}</table></div>`;
+  const cbs=[...v.querySelectorAll("input[data-i]")];
+  const upd=()=>{const sel=cbs.filter(c=>c.checked);$("#sum").textContent=`${sel.length} seleccionados · ${fmtSize(sel.reduce((s,c)=>s+items[c.dataset.i].size,0))}`;$("#del").disabled=!sel.length};
+  cbs.forEach(c=>c.onchange=upd);upd();
+  $("#s-all").onclick=()=>{cbs.forEach(c=>c.checked=true);upd()};
+  $("#s-none").onclick=()=>{cbs.forEach(c=>c.checked=false);upd()};
+  $("#s-sug").onclick=()=>{cbs.forEach(c=>c.checked=items[c.dataset.i].suggested);upd()};
+  $("#del").onclick=guard(async()=>{
+    const paths=cbs.filter(c=>c.checked).map(c=>items[c.dataset.i].path);
+    if(!confirm(`¿${trash?"Mover a la papelera":"BORRAR DEFINITIVAMENTE"} ${paths.length} elemento(s)?`))return;
+    const r=await api("/api/delete",{paths});
+    toast(`${r.deleted.length} eliminados`+(r.errors.length?` · ${r.errors.length} errores (${r.errors[0].error})`:""),6000);
+    await rescan();
+  });
+}
+
+/* C · carátulas */
+async function covers(){
+  const d=await api("/api/covers");
+  const v=$("#view");S.cv={albums:d.albums,found:{}};
+  v.innerHTML=`<div class="note">Se buscan en MusicBrainz y Cover Art Archive (o se extraen de los tags si ya van incrustadas) y se guardan como <code>cover.jpg</code> en la carpeta del álbum, que es lo que Navidrome busca primero. Verás una vista previa antes de guardar.</div>
+   <div class="bar"><label><input type="checkbox" id="onlymiss" checked> Solo álbumes sin carátula (${d.missing})</label><label><input type="checkbox" id="emb" checked> Usar carátula incrustada si existe</label><span class="sp"></span><button class="b p" id="csearch">Buscar para seleccionados</button></div>
+   <div id="cvlist"></div>`;
+  const draw=()=>{
+    const only=$("#onlymiss").checked;
+    const rows=d.albums.map((a,i)=>({a,i})).filter(x=>!only||!x.a.cover);
+    $("#cvlist").innerHTML=rows.length?`<div class="card"><table><tr><th><input type="checkbox" id="cvall" checked></th><th>Artista</th><th>Álbum</th><th>Carpeta</th><th>Carátula</th></tr>${rows.map(({a,i})=>`<tr><td><input type="checkbox" class="cvc" data-i="${i}" checked></td><td>${esc(a.artist)}</td><td>${esc(a.album)}</td><td class="mut">${esc(a.dir)}</td><td>${a.cover?`<span class="ok">✓ ${esc(a.cover)}</span>`:'<span class="warn">falta</span>'}</td></tr>`).join("")}</table></div>`:'<div class="empty">✅ Todos los álbumes tienen carátula.</div>';
+    const all=$("#cvall");if(all)all.onchange=()=>document.querySelectorAll(".cvc").forEach(c=>c.checked=all.checked);
+  };
+  draw();$("#onlymiss").onchange=draw;
+  $("#csearch").onclick=guard(async()=>{
+    const dirs=[...document.querySelectorAll(".cvc:checked")].map(c=>d.albums[c.dataset.i].dir);
+    if(!dirs.length)return toast("Selecciona al menos un álbum");
+    const res=await runJob(api("/api/covers/search",{dirs,embedded:$("#emb").checked}),"Buscando carátulas…");
+    showCoverResults(res||[]);
+  });
+}
+function showCoverResults(res){
+  const ok=res.filter(r=>r.status==="found"),bad=res.filter(r=>r.status!=="found");
+  $("#view").innerHTML=`<div class="bar"><button class="b" id="cvback">← Volver</button><span class="ok">${ok.length} encontradas</span><span class="mut">${bad.length} sin resultado</span><span class="sp"></span><button class="b p" id="cvsave">Guardar seleccionadas</button></div>
+   <div class="grid">${ok.map((r,i)=>`<div class="card cv"><img loading="lazy" src="/api/covers/preview?dir=${encodeURIComponent(r.dir)}&t=${TOKEN}&_=${Date.now()}"><label><input type="checkbox" class="cvs" data-i="${i}" checked> <b>${esc(r.album||r.dir)}</b></label><span class="mut">${esc(r.artist)}</span><span class="mut" style="font-size:12px">${esc(r.match)}</span></div>`).join("")}</div>
+   ${bad.length?`<h3>Sin resultado</h3><div class="card"><table>${bad.map(r=>`<tr><td>${esc(r.artist)} – ${esc(r.album||r.dir)}</td><td class="mut">${esc(r.match)}</td></tr>`).join("")}</table></div>`:""}`;
+  $("#cvback").onclick=()=>show("covers");
+  $("#cvsave").onclick=guard(async()=>{
+    const dirs=[...document.querySelectorAll(".cvs:checked")].map(c=>ok[c.dataset.i].dir);
+    const r=await api("/api/covers/save",{dirs});
+    toast(`${r.saved.length} carátulas guardadas`+(r.errors.length?` · ${r.errors.length} errores`:""));
+    await rescan("covers");
+  });
+}
+
+/* E · tags y nombres */
+async function organize(){
+  const d=await api("/api/covers");  // reutiliza el listado de álbumes
+  S.org={albums:d.albums,plans:{}};
+  $("#view").innerHTML=`<div class="note">Compara tus tags con MusicBrainz y propone el formato recomendado por Navidrome: <b>title, artist, album, albumartist, tracknumber</b> (+ discnumber si hay varios discos, date, compilation, ARTISTS multivalor y MBIDs) y ficheros <code>NN - Título.ext</code>. <b>No se toca nada hasta que revises y pulses «Aplicar».</b> Si MusicBrainz no encuentra el álbum, solo se hace limpieza básica. Los cambios se registran en <code>~/.navimusic/changes.jsonl</code>.</div>
+   <div class="bar"><button class="b" id="oall">Todo</button><button class="b" id="onone">Nada</button><span class="sp"></span><button class="b p" id="oplan">Analizar seleccionados</button></div>
+   <div class="card"><table><tr><th></th><th>Artista</th><th>Álbum</th><th>Carpeta</th><th class="n">Pistas</th></tr>${d.albums.map((a,i)=>`<tr><td><input type="checkbox" class="oc" data-i="${i}"></td><td>${esc(a.artist)}</td><td>${esc(a.album)}</td><td class="mut">${esc(a.dir)}</td><td class="n">${a.count}</td></tr>`).join("")}</table></div>`;
+  $("#oall").onclick=()=>document.querySelectorAll(".oc").forEach(c=>c.checked=true);
+  $("#onone").onclick=()=>document.querySelectorAll(".oc").forEach(c=>c.checked=false);
+  $("#oplan").onclick=guard(async()=>{
+    const dirs=[...document.querySelectorAll(".oc:checked")].map(c=>d.albums[c.dataset.i].dir);
+    if(!dirs.length)return toast("Selecciona al menos un álbum");
+    const plans=await runJob(api("/api/organize/plan",{dirs}),"Consultando MusicBrainz…");
+    plans.forEach(p=>S.org.plans[p.dir]=p);renderPlans();
+  });
+}
+const TAGLBL={title:"título",artist:"artista",album:"álbum",albumartist:"artista álbum",tracknumber:"nº pista",discnumber:"disco",date:"fecha",compilation:"compilación",artists:"artists",albumartists:"albumartists"};
+function renderPlans(){
+  const plans=Object.values(S.org.plans);
+  const v=$("#view");
+  v.innerHTML=`<div class="bar"><button class="b" id="pback">← Volver</button>
+    <label><input type="checkbox" id="o-tags" checked> Escribir tags</label><label><input type="checkbox" id="o-ren" checked> Renombrar ficheros</label><label><input type="checkbox" id="o-reorg"> Reorganizar en Artista/Álbum/</label>
+    <span class="sp"></span><button class="b p" id="papply">Aplicar a seleccionados</button></div><div id="plans"></div>`;
+  const draw=()=>{
+    const reorg=$("#o-reorg").checked;
+    $("#plans").innerHTML=plans.map((p,i)=>{
+      const n=p.tracks.filter(t=>Object.keys(t.changes).length||(reorg?t.new_reorg:t.new_inplace)!==t.path).length;
+      const good=p.mode==="musicbrainz"&&p.coverage>=0.8;
+      return `<details class="card"><summary><input type="checkbox" class="pc" data-i="${i}" ${n&&good?"checked":""} onclick="event.stopPropagation()">
+        <b>${esc(p.artist)} – ${esc(p.album)}</b>
+        ${p.mode==="musicbrainz"?`<span class="chip ${good?"ok":"warn"}">MusicBrainz · ${Math.round(p.coverage*100)}% emparejado</span>`:'<span class="chip warn">solo limpieza básica</span>'}
+        <span class="mut">${n} de ${p.count} pistas con cambios</span></summary>
+        <div class="b" style="padding:0 14px 12px">
+          ${p.note?`<div class="warn">${esc(p.note)}</div>`:""}
+          ${p.candidates.length?`<div style="margin:6px 0">Release: <select class="cand" data-i="${i}"><option value="">(sin MusicBrainz)</option>${p.candidates.map(c=>`<option value="${c.id}" ${p.release&&p.release.id===c.id?"selected":""}>${esc(c.artist)} – ${esc(c.title)} · ${esc((c.date||"").slice(0,4))} · ${c.tracks||"?"} pistas · ${c.country||""} · ${c.score}%</option>`).join("")}</select></div>`:""}
+          <table><tr><th>Fichero actual</th><th>Cambios de tags</th><th>Nuevo nombre</th></tr>${p.tracks.map(t=>{
+            const target=reorg?t.new_reorg:t.new_inplace;
+            const ch=Object.entries(t.changes).map(([k,[o,nw]])=>`<div><span class="mut">${TAGLBL[k]||k}:</span> ${o&&o.length?`<span class="old">${esc(o.join("; "))}</span> `:""}<span class="new">${esc(nw.join("; "))}</span></div>`).join("");
+            return `<tr><td>${esc(t.path.split("/").pop())}</td><td>${ch||'<span class="mut">sin cambios</span>'}${t.writable?"":'<div class="warn">formato de solo lectura</div>'}</td><td>${target!==t.path?`<span class="new">${esc(target)}</span>`:'<span class="mut">igual</span>'}</td></tr>`}).join("")}</table></div></details>`;
+    }).join("")||'<div class="empty">Sin resultados</div>';
+    document.querySelectorAll(".cand").forEach(s=>s.onchange=guard(async()=>{
+      const p=plans[s.dataset.i];
+      const np=await api("/api/organize/replan",{dir:p.dir,mbid:s.value});
+      S.org.plans[p.dir]=np;plans[s.dataset.i]=np;draw();
+    }));
+  };
+  draw();$("#o-reorg").onchange=draw;$("#pback").onclick=()=>show("organize");
+  $("#papply").onclick=guard(async()=>{
+    const dirs=[...document.querySelectorAll(".pc:checked")].map(c=>plans[c.dataset.i].dir);
+    if(!dirs.length)return toast("Selecciona al menos un álbum");
+    if(!confirm(`Se modificarán ficheros de ${dirs.length} álbum(es). ¿Continuar?`))return;
+    const r=await runJob(api("/api/organize/apply",{dirs,tags:$("#o-tags").checked,rename:$("#o-ren").checked,reorganize:$("#o-reorg").checked}),"Aplicando cambios…");
+    const errs=r.flatMap(x=>x.errors);
+    toast(`${r.reduce((s,x)=>s+x.done,0)} pistas procesadas`+(errs.length?` · ${errs.length} errores: ${errs[0].error}`:""),8000);
+    await rescan("organize");
+  });
+}
+
+/* ---------- ayuda ---------- */
+const HELP=[
+["Qué es NaviMusic",`<p>Herramienta para ordenar una biblioteca de música antes (o mientras) la usas con <b>Navidrome</b>. Analiza una carpeta de audio y te ofrece cinco herramientas, una por pestaña. Funciona en tu equipo: los ficheros nunca se suben a ningún sitio. Solo se consulta <b>MusicBrainz</b> (metadatos) y <b>Cover Art Archive</b> (carátulas), enviando únicamente nombres de artista/álbum y los identificadores MBID.</p>
+<p><b>Empieza así:</b> pulsa <i>Elegir carpeta…</i>, navega hasta tu música y pulsa <i>Escanear esta carpeta</i>. Al terminar se habilitan las pestañas. Tras cada cambio la biblioteca se reescanea sola (o usa <i>↻ Reescanear</i>).</p>`],
+["A · Biblioteca",`<p>Listado de solo lectura organizado por <b>artista → álbum → pistas</b>. El artista es el <i>albumartist</i> (o el artista de la pista si falta). Cada álbum muestra año, carpeta, disco, nº, título, formato, duración y tamaño. El cuadro de filtro busca por artista, álbum o título.</p>
+<p>Útil para detectar de un vistazo álbumes partidos en varias carpetas, artistas escritos de dos maneras o pistas sin título.</p>`],
+["B · Listas de reproducción",`<p>Busca ficheros de lista (<code>.m3u</code>, <code>.m3u8</code>, <code>.pls</code>, <code>.wpl</code>, <code>.zpl</code>, <code>.xspf</code>, <code>.asx</code>…). Navidrome gestiona sus propias playlists, por lo que estos ficheros sueltos suelen sobrar. Marca los que quieras y pulsa <i>Borrar seleccionados</i>.</p>
+<p class="mut">Por defecto van a la papelera del sistema (se puede cambiar en Ajustes). Si usas esas listas desde otro reproductor, no las borres.</p>`],
+["C · Carátulas",`<p>Muestra los álbumes (carpetas con audio) y cuáles no tienen <code>cover.jpg</code>, <code>folder.jpg</code>, <code>front.png</code>… Selecciona los que quieras y pulsa <i>Buscar</i>:</p>
+<ol><li>Si <i>Usar carátula incrustada</i> está activo y la pista ya lleva imagen en los tags, se extrae esa.</li><li>Si no, se usa el MBID de los tags o se busca la release en MusicBrainz (puntuación mínima 70) y se descarga la portada frontal de Cover Art Archive (500 px).</li></ol>
+<p>Verás una <b>vista previa</b> de cada resultado; marca las correctas y pulsa <i>Guardar seleccionadas</i>. Se guarda como <code>cover.jpg</code> (o <code>.png</code>) en la carpeta del álbum, que es lo primero que busca Navidrome. Los álbumes sin resultado se listan aparte.</p>`],
+["D · Sobrantes",`<p>Lista todo lo que no es audio, lista de reproducción ni carátula estándar, con el motivo:</p>
+<ul><li><b>Sugeridos</b> (marcados por defecto): <code>.DS_Store</code>, <code>Thumbs.db</code>, <code>desktop.ini</code>, <code>._*</code> de macOS, <code>.nfo</code>, <code>.txt</code>, <code>.log</code>, <code>.sfv</code>, <code>.md5</code>, <code>.url</code>, temporales, ficheros de 0 bytes y <b>carpetas vacías</b>.</li><li><b>No sugeridos</b>: imágenes que no son carátula, <code>.cue</code>, PDFs, audio ilegible/corrupto y tipos desconocidos. Revísalos antes de marcarlos.</li></ul>
+<p>Botones <i>Todo / Solo sugeridos / Nada</i> y contador de espacio. El borrado pide confirmación.</p>`],
+["E · Tags y nombres",`<p>Compara tus ficheros con MusicBrainz y propone el formato recomendado por <b>Navidrome</b>.</p>
+<p><b>Flujo:</b> marca álbumes → <i>Analizar seleccionados</i> (~2 s por álbum) → revisa → <i>Aplicar</i>. <b>No se modifica nada hasta que aplicas.</b></p>
+<p><b>Tags que escribe:</b> <code>title</code>, <code>artist</code>, <code>album</code>, <code>albumartist</code>, <code>tracknumber</code>; <code>discnumber</code> solo en álbumes de varios discos; <code>date</code>; <code>compilation=1</code> con «Various Artists»; <code>ARTISTS</code>/<code>ALBUMARTISTS</code> multivalor cuando hay varios artistas; y los MBID (<code>musicbrainz_albumid</code>, <code>trackid</code>, <code>artistid</code>, <code>albumartistid</code>, <code>releasegroupid</code>). No toca género, letras ni carátula incrustada.</p>
+<p><b>Nombres:</b> <code>NN - Título.ext</code> (con prefijo <code>D-</code> si hay varios discos). Opción <i>Reorganizar en Artista/Álbum/</i> para mover también las carpetas (arrastra la carátula y otros ficheros sueltos y borra las carpetas que queden vacías). Caracteres ilegales en Windows se sustituyen.</p>
+<p><b>Lectura del resultado:</b> la etiqueta <span class="chip ok">MusicBrainz · N% emparejado</span> indica cuántas pistas se asociaron a la release; <span class="chip warn">solo limpieza básica</span> significa que no hubo coincidencia fiable y solo se arreglan espacios, título/nº de pista deducidos del nombre del fichero y albumartist. Se preseleccionan los álbumes con ≥ 80 % de emparejado. Dentro de cada álbum puedes <b>cambiar la release</b> (ediciones, países, deluxe) y se recalcula. Rojo tachado = valor actual; verde = valor nuevo.</p>
+<p class="mut">Cada cambio se anota en <code>~/.navimusic/changes.jsonl</code> (ruta antigua/nueva y tags anteriores) por si necesitas revertir a mano.</p>`],
+["Formatos admitidos",`<p><b>Lectura y escritura de tags:</b> MP3 (ID3v2.4), FLAC, OGG Vorbis, Opus, M4A/MP4. <b>Solo lectura:</b> WMA, WAV, AIFF, APE, WavPack y similares (se listan, pero se marcan «formato de solo lectura» en E).</p>`],
+["Ajustes y seguridad",`<ul><li><b>Contacto MusicBrainz:</b> email o URL que se envía en el <i>User-Agent</i>, como pide su política de uso. Recomendado rellenarlo.</li><li><b>Papelera:</b> si está activo, los borrados van a la papelera; si no, son definitivos (las carpetas solo se borran si están vacías).</li><li>El servidor solo escucha en <code>127.0.0.1</code>, usa un token por sesión y no permite tocar rutas fuera de la carpeta elegida.</li><li><b>Haz copia de seguridad antes de modificar tags en masa.</b></li></ul>`],
+["Problemas frecuentes",`<ul><li><b>«Load failed» / «Sin conexión»:</b> el servidor no está en marcha o abriste el HTML como fichero. Ejecuta <code>python -m navimusic</code> y usa la dirección que muestra.</li><li><b>MusicBrainz no encuentra mi álbum:</b> revisa que <i>artist</i> y <i>album</i> estén bien escritos o elige otra release en el desplegable.</li><li><b>Va lento:</b> MusicBrainz limita a 1 petición por segundo; es normal.</li><li><b>Carátula equivocada:</b> desmárcala en la vista previa antes de guardar.</li></ul>`]
+];
+$("#help").onclick=()=>{
+  overlay(`<div style="display:flex;align-items:center"><b style="font-size:16px">Ayuda de NaviMusic</b><span class="sp"></span><button class="b" id="hx">Cerrar</button></div>
+  <div style="overflow:auto;max-height:62vh;line-height:1.55">${HELP.map((h,i)=>`<details class="card" ${i===0?"open":""}><summary><b>${h[0]}</b></summary><div style="padding:0 14px 10px">${h[1]}</div></details>`).join("")}</div>
+  <div class="mut" style="font-size:12px">NaviMusic v${esc(S.version||"1.0.0")} · © 2026 mgoreiro · Licencia MIT</div>`);
+  $("#obox").style.width="min(760px,94vw)";$("#hx").onclick=closeOverlay;
+};
+
+/* ---------- reescaneo y ajustes ---------- */
+async function rescan(tab){
+  const r=await runJob(api("/api/scan",{path:S.root}),"Reescaneando…");
+  if(r&&r.stats)updateHeader(r.stats);
+  show(tab||S.tab);
+}
+$("#rescan").onclick=guard(()=>rescan());
+$("#pick").onclick=guard(()=>browse(S.root||""));
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>show(b.dataset.t));
+$("#settings").onclick=()=>{
+  overlay(`<b>Ajustes</b>
+   <label>Contacto para MusicBrainz (email o URL; se envía en el User-Agent, recomendado por su política de uso)<br><input type="text" id="s-contact" style="width:100%" value="${esc(S.settings.contact||"")}"></label>
+   <label><input type="checkbox" id="s-trash" ${S.settings.trash?"checked":""}> Enviar a la papelera en vez de borrar definitivamente</label>
+   <div style="display:flex;gap:8px;justify-content:flex-end"><button class="b" id="s-x">Cancelar</button><button class="b p" id="s-ok">Guardar</button></div>`);
+  $("#s-x").onclick=closeOverlay;
+  $("#s-ok").onclick=guard(async()=>{S.settings=await api("/api/settings",{contact:$("#s-contact").value,trash:$("#s-trash").checked});closeOverlay()});
+};
+$("#overlay").addEventListener("mousedown",e=>{if(e.target.id==="overlay"&&!$("#pc"))closeOverlay()});
+
+(async()=>{
+  const st=await api("/api/state");S.settings=st.settings;S.version=st.version;
+  if(st.scanned){S.root=st.root;S.ready=true;updateHeader(st.stats);show("library")}
+})().catch(e=>toast("⚠ "+e.message));
+</script>
+</body>
+</html>

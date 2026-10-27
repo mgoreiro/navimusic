@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "navimusic"
+version = "1.0.0"
+description = "Organizador de bibliotecas de audio para Navidrome (MusicBrainz): tags, nombres, carátulas y limpieza"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "mgoreiro" }]
+dependencies = ["mutagen>=1.47", "send2trash>=1.8"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Multimedia :: Sound/Audio",
+]
+
+[project.scripts]
+navimusic = "navimusic.server:console_main"
+
+[tool.setuptools]
+packages = ["navimusic"]
+
+[tool.setuptools.package-data]
+navimusic = ["static/*"]

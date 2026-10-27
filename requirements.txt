@@ -1,0 +1,2 @@
+mutagen>=1.47
+send2trash>=1.8
