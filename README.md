@@ -14,7 +14,7 @@ Cover Art Archive.
 Requiere Python 3.9 o superior.
 
 ```bash
-git clone <url-del-repositorio> && cd <carpeta>
+git clone https://github.com/mgoreiro/navimusic.git && cd navimusic
 python3 -m venv .venv
 . .venv/bin/activate            # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
