@@ -73,7 +73,7 @@ details[open]>summary::before{content:"▾"}
   <button data-t="organize" disabled>E · Tags y nombres</button>
 </nav>
 <main id="view"><div class="empty">Elige una carpeta con tu música para empezar.<br>¿Primera vez? Pulsa <b>? Ayuda</b>.</div></main>
-<footer class="mut" style="text-align:center;font-size:12px;padding:18px">NaviMusic v1.0.0 · © 2026 mgoreiro · Licencia MIT</footer>
+<footer class="mut" style="text-align:center;font-size:12px;padding:18px">NaviMusic v<span id="ver">1.0.1</span> · © 2026 mgoreiro · Licencia MIT</footer>
 
 <div id="overlay"><div class="box" id="obox"></div></div>
 <div id="toast"></div>
@@ -320,7 +320,7 @@ const HELP=[
 $("#help").onclick=()=>{
   overlay(`<div style="display:flex;align-items:center"><b style="font-size:16px">Ayuda de NaviMusic</b><span class="sp"></span><button class="b" id="hx">Cerrar</button></div>
   <div style="overflow:auto;max-height:62vh;line-height:1.55">${HELP.map((h,i)=>`<details class="card" ${i===0?"open":""}><summary><b>${h[0]}</b></summary><div style="padding:0 14px 10px">${h[1]}</div></details>`).join("")}</div>
-  <div class="mut" style="font-size:12px">NaviMusic v${esc(S.version||"1.0.0")} · © 2026 mgoreiro · Licencia MIT</div>`);
+  <div class="mut" style="font-size:12px">NaviMusic v${esc(S.version||"1.0.1")} · © 2026 mgoreiro · Licencia MIT</div>`);
   $("#obox").style.width="min(760px,94vw)";$("#hx").onclick=closeOverlay;
 };
 
@@ -344,7 +344,7 @@ $("#settings").onclick=()=>{
 $("#overlay").addEventListener("mousedown",e=>{if(e.target.id==="overlay"&&!$("#pc"))closeOverlay()});
 
 (async()=>{
-  const st=await api("/api/state");S.settings=st.settings;S.version=st.version;
+  const st=await api("/api/state");S.settings=st.settings;S.version=st.version;$("#ver").textContent=st.version;
   if(st.scanned){S.root=st.root;S.ready=true;updateHeader(st.stats);show("library")}
 })().catch(e=>toast("⚠ "+e.message));
 </script>

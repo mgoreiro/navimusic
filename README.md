@@ -7,7 +7,7 @@ Organizador de bibliotecas de audio pensado para [Navidrome](https://www.navidro
 funciona igual en **macOS, Linux y Windows**. Tus ficheros no salen de tu equipo: solo se consultan MusicBrainz y
 Cover Art Archive.
 
-- Autor: **mgoreiro** · Licencia: [MIT](LICENSE) · Versión: 1.0.0 ([changelog](CHANGELOG.md))
+- Autor: **mgoreiro** · Licencia: [MIT](LICENSE) · Versión: 1.0.1 ([changelog](CHANGELOG.md))
 
 ## Instalación
 
