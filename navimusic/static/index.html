@@ -240,7 +240,7 @@ async function organize(){
   const d=await api("/api/covers");  // reutiliza el listado de álbumes
   S.org={albums:d.albums,plans:{}};
   $("#view").innerHTML=`<div class="note">Compara tus tags con MusicBrainz y propone el formato recomendado por Navidrome: <b>title, artist, album, albumartist, tracknumber</b> (+ discnumber si hay varios discos, date, compilation, ARTISTS multivalor y MBIDs) y ficheros <code>NN - Título.ext</code>. <b>No se toca nada hasta que revises y pulses «Aplicar».</b> Si MusicBrainz no encuentra el álbum, solo se hace limpieza básica. Los cambios se registran en <code>~/.navimusic/changes.jsonl</code>.</div>
-   <div class="bar"><button class="b" id="oall">Todo</button><button class="b" id="onone">Nada</button><span class="sp"></span><button class="b p" id="oplan">Analizar seleccionados</button></div>
+   <div class="bar"><button class="b" id="oall">Seleccionar todo</button><button class="b" id="onone">Ninguno</button><span class="sp"></span><button class="b p" id="oplan">Analizar seleccionados</button></div>
    <div class="card"><table><tr><th></th><th>Artista</th><th>Álbum</th><th>Carpeta</th><th class="n">Pistas</th></tr>${d.albums.map((a,i)=>`<tr><td><input type="checkbox" class="oc" data-i="${i}"></td><td>${esc(a.artist)}</td><td>${esc(a.album)}</td><td class="mut">${esc(a.dir)}</td><td class="n">${a.count}</td></tr>`).join("")}</table></div>`;
   $("#oall").onclick=()=>document.querySelectorAll(".oc").forEach(c=>c.checked=true);
   $("#onone").onclick=()=>document.querySelectorAll(".oc").forEach(c=>c.checked=false);
@@ -255,7 +255,7 @@ const TAGLBL={title:"título",artist:"artista",album:"álbum",albumartist:"artis
 function renderPlans(){
   const plans=Object.values(S.org.plans);
   const v=$("#view");
-  v.innerHTML=`<div class="bar"><button class="b" id="pback">← Volver</button>
+  v.innerHTML=`<div class="bar"><button class="b" id="pback">← Volver</button><button class="b" id="pall">Seleccionar todo</button><button class="b" id="pnone">Ninguno</button>
     <label><input type="checkbox" id="o-tags" checked> Escribir tags</label><label><input type="checkbox" id="o-ren" checked> Renombrar ficheros</label><label><input type="checkbox" id="o-reorg"> Reorganizar en Artista/Álbum/</label>
     <span class="sp"></span><button class="b p" id="papply">Aplicar a seleccionados</button></div><div id="plans"></div>`;
   const draw=()=>{
@@ -282,6 +282,8 @@ function renderPlans(){
     }));
   };
   draw();$("#o-reorg").onchange=draw;$("#pback").onclick=()=>show("organize");
+  $("#pall").onclick=()=>document.querySelectorAll(".pc").forEach(c=>c.checked=true);
+  $("#pnone").onclick=()=>document.querySelectorAll(".pc").forEach(c=>c.checked=false);
   $("#papply").onclick=guard(async()=>{
     const dirs=[...document.querySelectorAll(".pc:checked")].map(c=>plans[c.dataset.i].dir);
     if(!dirs.length)return toast("Selecciona al menos un álbum");
