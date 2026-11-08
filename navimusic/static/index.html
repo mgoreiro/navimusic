@@ -64,6 +64,7 @@ details[open]>summary::before{content:"▾"}
   <button class="b" id="rescan" disabled>↻ Reescanear</button>
   <button class="b" id="settings">⚙ Ajustes</button>
   <button class="b" id="help">? Ayuda</button>
+  <button class="b d" id="quit">⏻ Salir</button>
 </header>
 <nav id="tabs">
   <button data-t="library" disabled>A · Biblioteca</button>
@@ -333,6 +334,12 @@ async function rescan(tab){
   show(tab||S.tab);
 }
 $("#rescan").onclick=guard(()=>rescan());
+$("#quit").onclick=async()=>{
+  if(!confirm("¿Cerrar NaviMusic?"))return;
+  try{await api("/api/quit",{})}catch(e){}
+  document.body.innerHTML='<div class="empty" style="padding:80px 20px">NaviMusic se ha cerrado. Ya puedes cerrar esta pestaña.</div>';
+  window.close();
+};
 $("#pick").onclick=guard(()=>browse(S.root||""));
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>show(b.dataset.t));
 $("#settings").onclick=()=>{
