@@ -1,54 +1,56 @@
 # NaviMusic
 
+[Español](README.es.md)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Organizador de bibliotecas de audio pensado para [Navidrome](https://www.navidrome.org/), con
-[MusicBrainz](https://musicbrainz.org/) como fuente de datos. Es un programa Python con interfaz web local que
-funciona igual en **macOS, Linux y Windows**. Tus ficheros no salen de tu equipo: solo se consultan MusicBrainz y
-Cover Art Archive.
+A music-library organiser made for [Navidrome](https://www.navidrome.org/), with
+[MusicBrainz](https://musicbrainz.org/) as its data source. It is a Python program with a local web interface that
+works the same on **macOS, Linux and Windows**. Your files never leave your machine: only MusicBrainz and the
+Cover Art Archive are queried.
 
-- Autor: **mgoreiro** · Licencia: [MIT](LICENSE) · Versión: 1.0.1 ([changelog](CHANGELOG.md))
+- Author: **Miguel González Oreiro** · License: [MIT](LICENSE) · Version: 1.0.1 ([changelog](CHANGELOG.md))
 
-## Instalación
+## Install
 
-Elige la que mejor te venga. En todas se abre `http://127.0.0.1:8765` en tu navegador: pulsa **Elegir carpeta…**,
-navega a tu música y escanea. El botón **? Ayuda** de la interfaz explica cada pestaña.
+Pick whichever suits you. In all of them, open `http://127.0.0.1:8765` in your browser: press **Choose folder…**,
+browse to your music and scan. The **? Help** button in the interface explains each tab.
 
-### 1. Ejecutable (sin instalar Python) — recomendado
+### 1. Executable (no Python needed), recommended
 
-Descarga el fichero de tu sistema desde la [última Release](https://github.com/mgoreiro/navimusic/releases/latest):
+Download the file for your system from the [latest Release](https://github.com/mgoreiro/navimusic/releases/latest):
 
-| Sistema | Fichero |
+| System | File |
 |---|---|
 | macOS Apple Silicon (M1/M2/M3/M4) | `navimusic-vX.Y.Z-macos-arm64.tar.gz` |
 | macOS Intel | `navimusic-vX.Y.Z-macos-x64.tar.gz` |
 | Windows 10/11 | `navimusic-vX.Y.Z-windows-x64.zip` |
 | Linux x86-64 | `navimusic-vX.Y.Z-linux-x64.tar.gz` |
 
-Descomprime y ejecuta `navimusic` (`navimusic.exe` en Windows). Se abrirá el navegador; para salir cierra la ventana
-de terminal o pulsa Ctrl+C. Los ejecutables no están firmados, así que el sistema avisará la primera vez:
+Unpack it and run `navimusic` (`navimusic.exe` on Windows). The browser will open; to quit, close the terminal window
+or press Ctrl+C. The executables are not signed, so your system will warn you the first time:
 
-- **macOS:** si dice que no puede verificar al desarrollador, quita la marca de cuarentena y vuelve a ejecutar:
+- **macOS:** if it says it cannot verify the developer, remove the quarantine flag and run it again:
   ```bash
   xattr -d com.apple.quarantine navimusic && ./navimusic
   ```
-- **Windows:** en el aviso de SmartScreen pulsa **Más información → Ejecutar de todos modos**.
+- **Windows:** in the SmartScreen warning press **More info → Run anyway**.
 - **Linux:** `chmod +x navimusic && ./navimusic`.
 
-Cada Release incluye `SHA256SUMS.txt` para verificar la descarga.
+Each Release includes `SHA256SUMS.txt` to verify the download.
 
-### 2. Con Python (pipx)
+### 2. With Python (pipx)
 
-Requiere Python 3.9 o superior y [pipx](https://pipx.pypa.io/):
+Needs Python 3.9 or later and [pipx](https://pipx.pypa.io/):
 
 ```bash
 pipx install git+https://github.com/mgoreiro/navimusic.git
 navimusic
 ```
 
-Actualizar: `pipx upgrade navimusic`. Desinstalar: `pipx uninstall navimusic`.
+Upgrade: `pipx upgrade navimusic`. Uninstall: `pipx uninstall navimusic`.
 
-### 3. Desde el código fuente
+### 3. From source
 
 ```bash
 git clone https://github.com/mgoreiro/navimusic.git && cd navimusic
@@ -58,83 +60,83 @@ pip install -r requirements.txt
 python -m navimusic
 ```
 
-### Opciones
+### Options
 
-| Opción | Efecto |
+| Option | Effect |
 |---|---|
-| `--no-browser` | No abre el navegador automáticamente |
-| `NAVIMUSIC_PORT=9000` | Cambia el puerto (si está ocupado usa uno libre) |
+| `--no-browser` | Do not open the browser automatically |
+| `NAVIMUSIC_PORT=9000` | Change the port (if it is busy, a free one is used) |
 
-## Funciones
+## Features
 
-| Pestaña | Qué hace |
+| Tab | What it does |
 |---|---|
-| **A · Biblioteca** | Árbol Artista → Álbum → pistas, con filtro por artista, álbum o título |
-| **B · Listas** | Localiza `.m3u`, `.m3u8`, `.pls`, `.wpl`, `.zpl`, `.xspf`, `.asx`… y permite borrarlas |
-| **C · Carátulas** | Detecta álbumes sin `cover.*`; busca en MusicBrainz + Cover Art Archive (o extrae la incrustada); vista previa y guarda `cover.jpg` |
-| **D · Sobrantes** | Lista `.nfo`, `.log`, `.sfv`, `Thumbs.db`, `.DS_Store`, `._*`, ficheros vacíos y carpetas vacías, con casillas para borrar |
-| **E · Tags y nombres** | Propone tags y nombres según las recomendaciones de Navidrome, con comparación previa y aplicación por álbum |
+| **A · Library** | Artist → Album → tracks tree, with a filter by artist, album or title |
+| **B · Playlists** | Finds `.m3u`, `.m3u8`, `.pls`, `.wpl`, `.zpl`, `.xspf`, `.asx`… and lets you delete them |
+| **C · Covers** | Detects albums without a `cover.*`; searches MusicBrainz + Cover Art Archive (or extracts the embedded one); preview and saves `cover.jpg` |
+| **D · Leftovers** | Lists `.nfo`, `.log`, `.sfv`, `Thumbs.db`, `.DS_Store`, `._*`, empty files and empty folders, with checkboxes to delete |
+| **E · Tags and names** | Proposes tags and names following Navidrome's recommendations, with a comparison first and per-album apply |
 
-### E · Normalización según Navidrome
+### E · Normalisation following Navidrome
 
-Basada en la [guía de etiquetado de Navidrome](https://www.navidrome.org/docs/usage/library/tagging/).
+Based on Navidrome's [tagging guide](https://www.navidrome.org/docs/usage/library/tagging/).
 
-Tags escritos: `title`, `artist`, `album`, `albumartist`, `tracknumber`; `discnumber` solo en multi-disco; `date`;
-`compilation=1` cuando el artista del álbum es «Various Artists»; `ARTISTS` y `ALBUMARTISTS` multivalor cuando hay
-varios artistas; y MBIDs (`musicbrainz_albumid`, `trackid`, `artistid`, `albumartistid`, `releasegroupid`).
+Tags written: `title`, `artist`, `album`, `albumartist`, `tracknumber`; `discnumber` only for multi-disc; `date`;
+`compilation=1` when the album artist is "Various Artists"; multi-value `ARTISTS` and `ALBUMARTISTS` when there are
+several artists; and MBIDs (`musicbrainz_albumid`, `trackid`, `artistid`, `albumartistid`, `releasegroupid`).
 
-Nombres: `NN - Título.ext` (`D-NN - Título.ext` en multi-disco); opcionalmente `Artista/Álbum/` moviendo también
-carátulas y ficheros sueltos y retirando carpetas vacías.
+Names: `NN - Title.ext` (`D-NN - Title.ext` for multi-disc); optionally `Artist/Album/`, also moving covers and
+loose files and removing empty folders.
 
-Cómo decide: busca la release por MBID de los tags o por artista+álbum, prefiere la de mismo número de pistas, y
-empareja ficheros con pistas por título (similitud) y número. Se preseleccionan los álbumes con ≥ 80 % de pistas
-emparejadas; si no hay coincidencia fiable solo hace limpieza básica (espacios, título y nº de pista desde el nombre
-de fichero, `albumartist`). Puedes cambiar la release elegida en un desplegable.
+How it decides: it looks up the release by the MBID in the tags or by artist + album, prefers the one with the same
+number of tracks, and matches files to tracks by title (similarity) and number. Albums with ≥ 80 % of tracks matched
+are preselected; if there is no reliable match it only does basic cleanup (spaces, title and track number from the file
+name, `albumartist`). You can change the chosen release in a drop-down.
 
-## Formatos
+## Formats
 
-Lectura y escritura de tags: MP3 (ID3v2.4), FLAC, OGG Vorbis, Opus, M4A/MP4.
-Solo lectura: WMA, WAV, AIFF, APE, WavPack, Musepack, DSF/DFF.
+Tag read and write: MP3 (ID3v2.4), FLAC, OGG Vorbis, Opus, M4A/MP4.
+Read only: WMA, WAV, AIFF, APE, WavPack, Musepack, DSF/DFF.
 
-## Seguridad y privacidad
+## Security and privacy
 
-- El servidor escucha solo en `127.0.0.1`, exige un token por sesión y valida la cabecera `Host`.
-- Cualquier ruta se comprueba contra la carpeta elegida; no se puede operar fuera de ella.
-- Nada se modifica sin revisión y confirmación. Los borrados van a la papelera salvo que se desactive en Ajustes.
-- Cada cambio de E se registra en `~/.navimusic/changes.jsonl`; los ajustes en `~/.navimusic/settings.json`.
-- A MusicBrainz solo se envían nombres de artista/álbum y MBIDs. Se respeta 1 petición/s y se identifica con un
-  User-Agent que puedes completar con tu contacto en Ajustes.
-- **Haz copia de seguridad antes de escribir tags en masa.**
+- The server listens only on `127.0.0.1`, requires a per-session token and validates the `Host` header.
+- Every path is checked against the chosen folder; nothing outside it can be touched.
+- Nothing is modified without review and confirmation. Deletions go to the trash unless you turn that off in Settings.
+- Every change made in E is logged in `~/.navimusic/changes.jsonl`; settings are in `~/.navimusic/settings.json`.
+- Only artist/album names and MBIDs are sent to MusicBrainz. It respects 1 request per second and identifies itself with a
+  User-Agent that you can complete with your contact in Settings.
+- **Back up before writing tags in bulk.**
 
-## Arquitectura
+## Architecture
 
 ```
 navimusic/
-  server.py       servidor HTTP (stdlib) + API JSON + tareas
-  scanner.py      recorrido, lectura de tags (con caché) y clasificación de ficheros
-  tags.py         lectura/escritura multi-formato con mutagen, carátulas incrustadas
-  musicbrainz.py  cliente MusicBrainz / Cover Art Archive con límite de ritmo
-  covers.py       búsqueda y guardado de carátulas
-  organizer.py    plan de cambios (tags + nombres) y su aplicación
-  jobs.py         tareas en segundo plano con progreso y cancelación
-  static/index.html  interfaz (HTML + JS, sin dependencias)
+  server.py       HTTP server (stdlib) + JSON API + tasks
+  scanner.py      walking, tag reading (cached) and file classification
+  tags.py         multi-format read/write with mutagen, embedded covers
+  musicbrainz.py  MusicBrainz / Cover Art Archive client with rate limiting
+  covers.py       cover search and saving
+  organizer.py    change plan (tags + names) and its application
+  jobs.py         background tasks with progress and cancellation
+  static/index.html  interface (HTML + JS, no dependencies)
 ```
 
-API (todas con cabecera `X-Token`): `GET /api/fs|state|job|library|playlists|extras|covers`,
+API (all with an `X-Token` header): `GET /api/fs|state|job|library|playlists|extras|covers`,
 `POST /api/scan|delete|covers/search|covers/save|organize/plan|organize/replan|organize/apply|cancel|settings`.
 
-## Generar los ejecutables
+## Building the executables
 
-Los construye la acción [`release.yml`](.github/workflows/release.yml) al subir una etiqueta `vX.Y.Z`:
-compila con PyInstaller en macOS (arm64 e Intel), Linux y Windows, comprueba que cada binario arranca y sirve la
-interfaz, y publica los paquetes y `SHA256SUMS.txt` en la Release. Para publicar una versión nueva:
+They are built by the [`release.yml`](.github/workflows/release.yml) action when a `vX.Y.Z` tag is pushed:
+it compiles with PyInstaller on macOS (arm64 and Intel), Linux and Windows, checks that each binary starts and serves
+the interface, and publishes the packages and `SHA256SUMS.txt` in the Release. To publish a new version:
 
 ```bash
-# actualiza la versión en navimusic/__init__.py, pyproject.toml y CHANGELOG.md; haz commit y push
+# update the version in navimusic/__init__.py, pyproject.toml and CHANGELOG.md; commit and push
 git tag -a v1.1.0 -m "NaviMusic 1.1.0" && git push origin v1.1.0
 ```
 
-Para construir uno a mano en tu máquina (PyInstaller no hace compilación cruzada):
+To build one by hand on your machine (PyInstaller does not cross-compile):
 
 ```bash
 pip install pyinstaller
@@ -142,12 +144,13 @@ pyinstaller --onefile --name navimusic --add-data "navimusic/static:navimusic/st
 # Windows: --add-data "navimusic\static;navimusic\static"
 ```
 
-## Limitaciones
+## Limitations
 
-- WMA, WAV y AIFF no admiten escritura de tags.
-- Las ediciones especiales (deluxe, reediciones) pueden elegirse mal automáticamente: revisa el desplegable de release.
-- No detecta duplicados de audio ni recomprime ni incrusta carátulas.
+- WMA, WAV and AIFF do not support tag writing.
+- Special editions (deluxe, reissues) may be picked wrongly automatically: check the release drop-down.
+- It does not detect audio duplicates, and it does not recompress or embed covers.
+- The interface is in Spanish for now.
 
-## Licencia
+## License
 
 [MIT](LICENSE) © 2026 mgoreiro
