@@ -9,7 +9,7 @@ A music-library organiser made for [Navidrome](https://www.navidrome.org/), with
 works the same on **macOS, Linux and Windows**. Your files never leave your machine: only MusicBrainz and the
 Cover Art Archive are queried.
 
-- Author: **Miguel González Oreiro** · License: [MIT](LICENSE) · Version: 1.0.1 ([changelog](CHANGELOG.md))
+- Author: **Miguel González Oreiro** · License: [MIT](LICENSE) · Version: 1.1.0 ([changelog](CHANGELOG.md))
 
 ## Install
 
