@@ -67,6 +67,10 @@ python -m navimusic
 | `--no-browser` | No abre el navegador automáticamente |
 | `NAVIMUSIC_PORT=9000` | Cambia el puerto (si está ocupado usa uno libre) |
 
+![NaviMusic comparando las etiquetas actuales con la propuesta de MusicBrainz para un álbum (datos de demostración)](https://raw.githubusercontent.com/mgoreiro/navimusic/main/docs/tags-y-nombres.jpg)
+
+![Pestaña Sobrantes de NaviMusic con ficheros inútiles y carpetas vacías (datos de demostración)](https://raw.githubusercontent.com/mgoreiro/navimusic/main/docs/sobrantes.jpg)
+
 ## Funciones
 
 | Pestaña | Qué hace |

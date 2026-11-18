@@ -67,6 +67,10 @@ python -m navimusic
 | `--no-browser` | Do not open the browser automatically |
 | `NAVIMUSIC_PORT=9000` | Change the port (if it is busy, a free one is used) |
 
+![NaviMusic comparing the current tags with the MusicBrainz proposal for an album (demo data)](https://raw.githubusercontent.com/mgoreiro/navimusic/main/docs/tags-y-nombres.jpg)
+
+![NaviMusic Leftovers tab listing junk files and empty folders (demo data)](https://raw.githubusercontent.com/mgoreiro/navimusic/main/docs/sobrantes.jpg)
+
 ## Features
 
 | Tab | What it does |
