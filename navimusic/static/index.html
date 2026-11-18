@@ -64,6 +64,7 @@ details[open]>summary::before{content:"▾"}
   <button class="b" id="rescan" disabled>↻ Reescanear</button>
   <button class="b" id="settings">⚙ Ajustes</button>
   <button class="b" id="help">? Ayuda</button>
+  <button class="b d" id="quit">⏻ Salir</button>
 </header>
 <nav id="tabs">
   <button data-t="library" disabled>A · Biblioteca</button>
@@ -73,7 +74,7 @@ details[open]>summary::before{content:"▾"}
   <button data-t="organize" disabled>E · Tags y nombres</button>
 </nav>
 <main id="view"><div class="empty">Elige una carpeta con tu música para empezar.<br>¿Primera vez? Pulsa <b>? Ayuda</b>.</div></main>
-<footer class="mut" style="text-align:center;font-size:12px;padding:18px">NaviMusic v<span id="ver">1.0.1</span> · © 2026 mgoreiro · Licencia MIT</footer>
+<footer class="mut" style="text-align:center;font-size:12px;padding:18px">NaviMusic v<span id="ver">1.1.0</span> · © 2026 mgoreiro · Licencia MIT</footer>
 
 <div id="overlay"><div class="box" id="obox"></div></div>
 <div id="toast"></div>
@@ -322,7 +323,7 @@ const HELP=[
 $("#help").onclick=()=>{
   overlay(`<div style="display:flex;align-items:center"><b style="font-size:16px">Ayuda de NaviMusic</b><span class="sp"></span><button class="b" id="hx">Cerrar</button></div>
   <div style="overflow:auto;max-height:62vh;line-height:1.55">${HELP.map((h,i)=>`<details class="card" ${i===0?"open":""}><summary><b>${h[0]}</b></summary><div style="padding:0 14px 10px">${h[1]}</div></details>`).join("")}</div>
-  <div class="mut" style="font-size:12px">NaviMusic v${esc(S.version||"1.0.1")} · © 2026 mgoreiro · Licencia MIT</div>`);
+  <div class="mut" style="font-size:12px">NaviMusic v${esc(S.version||"1.1.0")} · © 2026 mgoreiro · Licencia MIT</div>`);
   $("#obox").style.width="min(760px,94vw)";$("#hx").onclick=closeOverlay;
 };
 
@@ -333,6 +334,12 @@ async function rescan(tab){
   show(tab||S.tab);
 }
 $("#rescan").onclick=guard(()=>rescan());
+$("#quit").onclick=async()=>{
+  if(!confirm("¿Cerrar NaviMusic?"))return;
+  try{await api("/api/quit",{})}catch(e){}
+  document.body.innerHTML='<div class="empty" style="padding:80px 20px">NaviMusic se ha cerrado. Ya puedes cerrar esta pestaña.</div>';
+  window.close();
+};
 $("#pick").onclick=guard(()=>browse(S.root||""));
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>show(b.dataset.t));
 $("#settings").onclick=()=>{

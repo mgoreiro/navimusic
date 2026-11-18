@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0 — 2026-11-18
+- **Tags y nombres:** botón **Seleccionar todo** en ambas vistas (etiquetas y nombres).
+- **Botón Salir:** apaga el servidor desde la interfaz, con confirmación previa. El endpoint exige el token de sesión.
+- README en inglés como principal (el español pasa a `README.es.md`).
+
 ## 1.0.1
 - Distribución: ejecutables para macOS (arm64 e Intel), Linux y Windows publicados automáticamente en cada Release
   (GitHub Actions + PyInstaller, con `SHA256SUMS.txt`), e instalación con `pipx`.

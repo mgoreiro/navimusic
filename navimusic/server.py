@@ -348,6 +348,10 @@ class Handler(BaseHTTPRequestHandler):
                         SETTINGS[k] = body[k]
                 save_settings()
                 return self._json(200, SETTINGS)
+            if path == "/api/quit":
+                self._json(200, {})
+                threading.Thread(target=self.server.shutdown, daemon=True).start()
+                return
             fn = POST.get(path)
             if not fn:
                 return self._json(404, {"error": "No encontrado"})
